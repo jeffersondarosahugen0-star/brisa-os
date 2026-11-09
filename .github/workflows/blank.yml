@@ -1,0 +1,35 @@
+name: Construir ISO do Brisa OS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    container:
+      image: debian:bookworm
+      options: --privileged
+    steps:
+      - name: Instalar ferramentas
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            git ca-certificates live-build debootstrap xorriso squashfs-tools \
+            syslinux syslinux-common isolinux mtools dosfstools cpio zstd
+
+      - name: Baixar os arquivos do projeto
+        uses: actions/checkout@v4
+
+      - name: Montar a ISO
+        run: bash build.sh
+
+      - name: Guardar a ISO para download
+        uses: actions/upload-artifact@v4
+        with:
+          name: brisa-os-etapa1
+          path: brisa-os-etapa1.iso
+          retention-days: 14
+          compression-level: 0
